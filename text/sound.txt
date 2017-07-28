@@ -1,0 +1,16 @@
+NEUNG=/opt/audio/001.wav
+SONG=/opt/audio/002.wav
+SARM=/opt/audio/003.wav
+SEE=/opt/audio/004.wav
+HA=/opt/audio/005.wav
+HOK=/opt/audio/006.wav
+JED=/opt/audio/007.wav
+PAD=/opt/audio/008.wav
+KAOH=/opt/audio/009.wav
+SIB=/opt/audio/010.wav
+ED=/opt/audio/1ed.wav
+YEE=/opt/audio/2ye.wav
+ROI=/opt/audio/100.wav
+NUMBER=/opt/audio/number.wav
+KAA=/opt/audio/kaa.wav
+DEQUEUE=/opt/audio/dequeue.wav
