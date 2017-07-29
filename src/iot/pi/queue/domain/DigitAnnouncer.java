@@ -18,5 +18,22 @@ public class DigitAnnouncer implements Announcer {
 			Pause.delay(0.1);
 		}
 	}
+	
+	public void announce(List<Announceable> announceables, int slot) throws MalformedURLException { 
+		SoundPlayer.play(QueueVoices.NUMBER.getAudioFile());
+		announce(announceables);
+		SoundPlayer.play(QueueVoices.DEQUEUE.getAudioFile());
+		Pause.delay(0.1);
+		SoundPlayer.play(QueueVoices.NUMBER.getAudioFile());
+		Pause.delay(0.1);
+		switch (slot) { 
+			case 1: SoundPlayer.play(QueueVoices.NEUNG.getAudioFile()); break;
+			case 2: SoundPlayer.play(QueueVoices.SONG.getAudioFile()); break;
+			case 3: SoundPlayer.play(QueueVoices.SARM.getAudioFile()); break;
+			default: break;
+		}
+		Pause.delay(0.1);
+		SoundPlayer.play(QueueVoices.KAA.getAudioFile());
+	}
 
 }
