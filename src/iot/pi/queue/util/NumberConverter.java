@@ -37,9 +37,6 @@ public class NumberConverter {
 		} else if (nuai > 1) { 
 			digits.add(QueueVoices.values()[nuai - 1]);
 		}
-		for (Announceable digit : digits) { 
-			System.out.println(((QueueVoices)digit).name());
-		}
 		return digits;
 	}
 
