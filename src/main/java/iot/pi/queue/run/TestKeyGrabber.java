@@ -6,18 +6,18 @@ import de.ksquared.system.keyboard.KeyEvent;
 
 public class TestKeyGrabber {
 	public static void main(String[] args) {
+		
 		new GlobalKeyListener().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent event) { 
-				System.out.println(event.getSource());
-				System.out.println(event.getVirtualKeyCode());
+				System.out.println(event.getVirtualKeyCode() + " has been pressed");
 			}
 
 			@Override
-			public void keyReleased(KeyEvent event) {
-				System.out.println(event);
-				if (event.getVirtualKeyCode() == KeyEvent.VK_ADD && event.isCtrlPressed())
-					System.out.println("CTRL+ADD was just released (CTRL is still pressed)");
+			public void keyReleased(KeyEvent event) { 
+				if (event.getVirtualKeyCode() == KeyEvent.VK_J && event.isCtrlPressed()) { 
+					System.out.println("CTRL - J");
+				}
 			}
 		});
 		while (true)
