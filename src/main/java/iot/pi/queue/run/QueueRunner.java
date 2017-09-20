@@ -33,7 +33,7 @@ public class QueueRunner implements NativeKeyListener {
 
 	@Override
 	public void nativeKeyReleased(NativeKeyEvent arg0) {
-		System.out.println(arg0.getRawCode());
+		System.out.println(arg0.getKeyCode());
 		
 	}
 
