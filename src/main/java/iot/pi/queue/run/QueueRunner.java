@@ -1,5 +1,6 @@
 package iot.pi.queue.run;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -10,6 +11,8 @@ import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
+
+import iot.pi.queue.util.DBUtil;
 
 public class QueueRunner implements NativeKeyListener { 
 	
@@ -57,6 +60,11 @@ public class QueueRunner implements NativeKeyListener {
 		}
 		switch (event.getKeyCode()) { 
 			case MINUS_KEY: 
+				try {
+					DBUtil.resetQueue();
+				} catch (SQLException e) { 
+					e.printStackTrace();
+				}
 				break;
 			case NativeKeyEvent.VC_1: 
 				break;
