@@ -11,7 +11,7 @@ import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-public class SoundPlayer {
+public class SoundUtil {
 
 	public static void play(File audioFile) {
 		class AudioListener implements LineListener {

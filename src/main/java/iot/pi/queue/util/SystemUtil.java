@@ -10,7 +10,7 @@ import java.util.Date;
  *
  * @author master
  */
-public class Pause { 
+public class SystemUtil { 
 	
 	public static void delay(double seconds) {
 		Date start = new Date();

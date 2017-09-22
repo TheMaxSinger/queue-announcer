@@ -1,12 +1,14 @@
 package iot.pi.queue.util;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import iot.pi.queue.constants.QueueVoices;
 import iot.pi.queue.domain.Announceable;
+import iot.pi.queue.domain.Announcer;
 
-public class NumberConverter { 
+public class AnnounceUtil { 
 	
 	public static List<Announceable> getNumberAnnounce(int number) { 
 		List<Announceable> digits = new ArrayList<Announceable>();

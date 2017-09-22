@@ -1,6 +1,6 @@
 package iot.pi.queue.util;
 
-public class StringComposer { 
+public class StringUtil { 
 	
 	public static String headZeroFill(int num) { 
 		if (num < 0 || num > 999) { 
