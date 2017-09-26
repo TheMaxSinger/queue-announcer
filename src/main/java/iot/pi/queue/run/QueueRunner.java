@@ -86,7 +86,7 @@ public class QueueRunner implements NativeKeyListener {
 		QueueRunner test = new QueueRunner();
 		//System.out.println(test.executeCommand(new String[] {"screen", "/dev/ttyUSB0", "9600"}));
 		//System.out.println(test.executeCommand(new String[] {"screen", "-ls"}));
-		System.out.println(test.executeCommand(new String[] {"echo", "-e", test.resetString, "|", "/dev/ttyUSB0"}));
+		System.out.println(test.executeCommand(new String[] {"echo", test.resetString + " >> /dev/ttyUSB0"}));
 	}
 
 	@Override
