@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.net.MalformedURLException;
 
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
@@ -17,12 +18,19 @@ import org.jnativehook.keyboard.NativeKeyListener;
 
 import iot.pi.queue.util.DBUtil;
 import iot.pi.queue.util.StringUtil;
+import iot.pi.queue.domain.DigitAnnouncer;
+import iot.pi.queue.util.AnnounceUtil;
+import iot.pi.queue.domain.Announcer;
 
 public class QueueRunner implements NativeKeyListener { 
 	
 	private static boolean locked = false;
 	private static boolean jump = false;
+	private static boolean fixQueue = false;
 	private static boolean somethingInProgress = false;
+	private static int fixQueueNumber = 0;
+
+	private static final Announcer digitAnnouncer = new DigitAnnouncer();
 	
 	static final int MINUS_KEY = 3658;
 	static final int PLUS_KEY = 3662;
@@ -81,11 +89,21 @@ public class QueueRunner implements NativeKeyListener {
 		return output.toString();
 	}
 
+	private String renderQueue(int[] slots, int[] queues) { 
+		String sequence = StringUtil.getInputString(new String[] {"" + slots[0], "" + slots[1], "" + slots[2]},  new String[] {StringUtil.headZeroFill(queues[0]), StringUtil.headZeroFill(queues[1]), StringUtil.headZeroFill(queues[2])});
+		return executeCommand(new String[] {"screen", "-S", "queue", "-X", "stuff", sequence});
+	}
+	
+	private void resetFixQueue() { 
+		if (fixQueue) { 
+			fixQueue = false;
+			fixQueueNumber = 0;
+		} 
+	}
 
 	public static void main(String[] args) throws IOException { 
 		QueueRunner test = new QueueRunner();
-		System.out.println(test.executeCommand(new String[] {"screen", "/dev/ttyUSB0", "9600"}));
-		System.out.println(test.executeCommand(new String[] {"screen", "-ls"}));
+		test.executeCommand(new String[] {"screen", "-d", "-m", "-S", "queue", "/dev/ttyUSB0", "9600"});
 	}
 
 	@Override
@@ -94,7 +112,15 @@ public class QueueRunner implements NativeKeyListener {
 
 	@Override
 	public void nativeKeyReleased(NativeKeyEvent event) { 
-		if (!allowKeys.contains(event.getKeyCode()) || somethingInProgress) { 
+		int keyCode = event.getKeyCode();
+		if (!allowKeys.contains(keyCode) || somethingInProgress || 
+			(fixQueue && 
+				keyCode != NativeKeyEvent.VC_1 && 
+				keyCode != NativeKeyEvent.VC_4 && 
+				keyCode != NativeKeyEvent.VC_7 && 
+				keyCode != NativeKeyEvent.VC_A && 
+				keyCode != NativeKeyEvent.VC_B && 
+				keyCode != NativeKeyEvent.VC_C)) { 
 			return;
 		}
 		switch (event.getKeyCode()) { 
@@ -107,11 +133,18 @@ public class QueueRunner implements NativeKeyListener {
 					e.printStackTrace();
 					somethingInProgress = false;
 				} 
-				System.out.println(resetString);
 				break;
 			case NativeKeyEvent.VC_R: 
 				break;
 			case NativeKeyEvent.VC_A: 
+				if (!fixQueue) { 
+					fixQueue = true;
+					fixQueueNumber = 100;
+					renderQueue(new int[] {0,0,0}, new int[] {100,0,0});
+				} else { 
+					fixQueueNumber += 100;
+					renderQueue(new int[] {0,0,0}, new int[] {fixQueueNumber,0,0});
+				}
 				break;
 			case NativeKeyEvent.VC_B: 
 				break;
@@ -121,7 +154,16 @@ public class QueueRunner implements NativeKeyListener {
 	
 				break;
 			case NativeKeyEvent.VC_1: 
-				break;
+				if (fixQueue) { 
+					fixQueue = false;
+					renderQueue(new int[] {3,2,1}, new int[] {++fixQueueNumber,0,0});
+				} 
+				try {
+					digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(fixQueueNumber), Slot.NEUNG);
+				} catch (MalformedURLException ex) { 
+					ex.printStackTrace();
+				}
+				fixQueueNumber = 0;
 			case NativeKeyEvent.VC_4: 
 				break;
 			case NativeKeyEvent.VC_7: 
