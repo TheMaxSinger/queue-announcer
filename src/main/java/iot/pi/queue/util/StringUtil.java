@@ -16,14 +16,14 @@ public class StringUtil {
 	}
 	
 	public static String getInputString(String[] slots, String[] queues) { 
-		StringBuilder str = new StringBuilder(":1");
+		StringBuilder str = new StringBuilder("\":1");
 		for (String slot : slots) { 
 			str.append(slot);
 		}
 		for (String queue : queues) { 
 			str.append(queue);
 		}
-		str.append("\r");
+		str.append("\r\"");
 		return str.toString();
 	}
 
