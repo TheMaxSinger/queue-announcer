@@ -84,7 +84,7 @@ public class QueueRunner implements NativeKeyListener {
 
 	public static void main(String[] args) throws IOException { 
 		QueueRunner test = new QueueRunner();
-		System.out.println(test.executeCommand(new String[] {"screen", "-dmS", "queue", "/dev/ttyUSB0", "9600"}));
+		System.out.println(test.executeCommand(new String[] {"screen", "/dev/ttyUSB0", "9600"}));
 		System.out.println(test.executeCommand(new String[] {"screen", "-ls"}));
 	}
 
