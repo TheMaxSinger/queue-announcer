@@ -1,6 +1,8 @@
 package iot.pi.queue.run;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -61,10 +63,28 @@ public class QueueRunner implements NativeKeyListener {
             locked = true;
         }
     }
+	
+	private String executeCommand(String[] command) {
+		StringBuffer output = new StringBuffer();
+		Process p;
+		try {
+			p = Runtime.getRuntime().exec(command);
+			p.waitFor();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String line = "";
+			while ((line = reader.readLine())!= null) {
+				output.append(line + "\n");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return output.toString();
+	}
+
 
 	public static void main(String[] args) throws IOException { 
 		QueueRunner test = new QueueRunner();
-		Process p = Runtime.getRuntime().exec(new String[] {"screen", "-D", "-R", "/dev/ttyUSB0", "9600"});
+		System.out.println(test.executeCommand(new String[] {"screen", "-dmS", "queue", "/dev/ttyUSB0", "9600"}));
 	}
 
 	@Override
