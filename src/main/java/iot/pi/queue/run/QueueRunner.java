@@ -64,7 +64,7 @@ public class QueueRunner implements NativeKeyListener {
 
 	public static void main(String[] args) throws IOException { 
 		QueueRunner test = new QueueRunner();
-		Process p = Runtime.getRuntime().exec(new String[] {"sceen", "-d", "/dev/ttyUSB0", "9600"});
+		Process p = Runtime.getRuntime().exec(new String[] {"screen", "-D", "-R", "/dev/ttyUSB0", "9600"});
 	}
 
 	@Override
