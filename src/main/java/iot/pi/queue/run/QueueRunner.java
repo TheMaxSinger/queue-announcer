@@ -20,6 +20,7 @@ public class QueueRunner implements NativeKeyListener {
 	
 	private static boolean locked = false;
 	private static boolean jump = false;
+	private static boolean somethingInProgress = false;
 	
 	static final int MINUS_KEY = 3658;
 	static final int PLUS_KEY = 3662;
@@ -39,6 +40,9 @@ public class QueueRunner implements NativeKeyListener {
 														 NativeKeyEvent.VC_9, 
 														 MINUS_KEY, 
 														 PLUS_KEY);
+	
+	private final String hardResetString = StringUtil.getInputString(new String[] {"0", "0", "0"},  new String[] {StringUtil.headZeroFill(0), StringUtil.headZeroFill(0), StringUtil.headZeroFill(0)});
+	private final String resetString = StringUtil.getInputString(new String[] {"3", "2", "1"},  new String[] {StringUtil.headZeroFill(0), StringUtil.headZeroFill(0), StringUtil.headZeroFill(0)});
 	
 	public QueueRunner() { 
 		try {
@@ -60,7 +64,7 @@ public class QueueRunner implements NativeKeyListener {
 
 	public static void main(String[] args) throws IOException { 
 		QueueRunner test = new QueueRunner();
-		Process p = Runtime.getRuntime().exec(new String[] {"sudo", "sceen", "-dm", "/dev/ttyUSB0", "9600"});
+		Process p = Runtime.getRuntime().exec(new String[] {"sceen", "-d", "/dev/ttyUSB0", "9600"});
 	}
 
 	@Override
@@ -69,18 +73,20 @@ public class QueueRunner implements NativeKeyListener {
 
 	@Override
 	public void nativeKeyReleased(NativeKeyEvent event) { 
-		if (!allowKeys.contains(event.getKeyCode())) { 
+		if (!allowKeys.contains(event.getKeyCode()) || somethingInProgress) { 
 			return;
 		}
 		switch (event.getKeyCode()) { 
 			case MINUS_KEY: 
 				try {
+					somethingInProgress = true;
 					DBUtil.resetQueue();
+					somethingInProgress = false;
 				} catch (SQLException e) { 
 					e.printStackTrace();
-				}
-				String toSend = StringUtil.getInputString(new String[] {"3", "2", "1"},  new String[] {StringUtil.headZeroFill(0), StringUtil.headZeroFill(0), StringUtil.headZeroFill(0)});
-				System.out.println(toSend);
+					somethingInProgress = false;
+				} 
+				System.out.println(resetString);
 				break;
 			case NativeKeyEvent.VC_R: 
 				break;
