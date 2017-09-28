@@ -42,6 +42,20 @@ public class DBUtil {
 		}
 	}
 	
+	public static int[] firstLoadQueue() throws SQLException { 
+		int[] queues = new int[3];
+		Connection connection = getConnection();
+		String selectMaxQueue = "SELECT queue FROM queue ORDER BY slot";
+		PreparedStatement statement = connection.prepareStatement(selectMaxQueue);
+		ResultSet result = statement.executeQuery();
+		int index = 0;
+		while(result.next()) {
+		    queues[index++] = result.getInt("queue");
+		}
+		closeResultSet(result);
+		return queues;
+	}
+	
 	public static void resetQueue() throws SQLException { 
 		Connection connection = getConnection();
 		String updateTableSQL = "UPDATE queue SET called = 'N', finished = 'N', queue = 0";
