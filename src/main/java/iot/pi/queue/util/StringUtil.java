@@ -15,13 +15,13 @@ public class StringUtil {
 		return toReturn;
 	}
 	
-	public static String getInputString(String[] slots, String[] queues) { 
+	public static String getInputString(int[] slots, int[] queues) { 
 		StringBuilder str = new StringBuilder("\":1");
-		for (String slot : slots) { 
+		for (int slot : slots) { 
 			str.append(slot);
 		}
-		for (String queue : queues) { 
-			str.append(queue);
+		for (int queue : queues) { 
+			str.append(headZeroFill(queue));
 		}
 		str.append("\r\"");
 		return str.toString();

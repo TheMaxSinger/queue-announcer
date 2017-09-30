@@ -16,6 +16,7 @@ import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 
+import iot.pi.queue.constants.Slot;
 import iot.pi.queue.util.DBUtil;
 import iot.pi.queue.util.StringUtil;
 import iot.pi.queue.domain.DigitAnnouncer;
@@ -29,16 +30,19 @@ public class QueueRunner implements NativeKeyListener {
 	private static boolean fixQueue = false;
 	private static boolean somethingInProgress = false;
 	private static int fixQueueNumber = 0;
-
+	private static final int[] q000 = new int[] {0, 0, 0};
+	private static final int[] q123 = new int[] {3, 2, 1};
+	private static final int[] q213 = new int[] {3, 1, 2};
+	private static final int[] q312 = new int[] {2, 1, 3};
+	private static final int[] q132 = new int[] {2, 3, 1};
+	private static final int[] q231 = new int[] {1, 3, 2};
+	private static final int[] q321 = new int[] {3, 2, 1};
 	private static final Announcer digitAnnouncer = new DigitAnnouncer();
-	
 	static final int MINUS_KEY = 3658;
 	static final int PLUS_KEY = 3662;
 	static final List<Integer> allowKeys = Arrays.asList(NativeKeyEvent.VC_A, 
 														 NativeKeyEvent.VC_B,
 														 NativeKeyEvent.VC_C,
-														 NativeKeyEvent.VC_R,
-														 NativeKeyEvent.VC_F,
 														 NativeKeyEvent.VC_1, 
 														 NativeKeyEvent.VC_2,
 														 NativeKeyEvent.VC_3, 
@@ -50,9 +54,6 @@ public class QueueRunner implements NativeKeyListener {
 														 NativeKeyEvent.VC_9, 
 														 MINUS_KEY, 
 														 PLUS_KEY);
-	
-	private final String hardResetString = StringUtil.getInputString(new String[] {"0", "0", "0"},  new String[] {StringUtil.headZeroFill(0), StringUtil.headZeroFill(0), StringUtil.headZeroFill(0)});
-	private final String resetString = StringUtil.getInputString(new String[] {"3", "2", "1"},  new String[] {StringUtil.headZeroFill(0), StringUtil.headZeroFill(0), StringUtil.headZeroFill(0)});
 	
 	public QueueRunner() { 
 		try {
@@ -90,15 +91,42 @@ public class QueueRunner implements NativeKeyListener {
 	}
 
 	private String renderQueue(int[] slots, int[] queues) { 
-		String sequence = StringUtil.getInputString(new String[] {"" + slots[0], "" + slots[1], "" + slots[2]},  new String[] {StringUtil.headZeroFill(queues[0]), StringUtil.headZeroFill(queues[1]), StringUtil.headZeroFill(queues[2])});
-		return executeCommand(new String[] {"screen", "-S", "queue", "-X", "stuff", sequence});
+		return executeCommand(new String[] {"screen", "-S", "queue", "-X", "stuff", StringUtil.getInputString(slots, queues)});
 	}
-	
-	private void resetFixQueue() { 
+
+	private void increaseQueue(Slot slot) { 
+		somethingInProgress = true;
 		if (fixQueue) { 
+			if (fixQueueNumber = 999) { 
+				fixQueueNumber = 0;
+			}
+			if (slot.equals(Slot.NEUNG)) { 
+				renderQueue(q123, new int[] {++fixQueueNumber,0,0});
+			} else if (slot.equals(Slot.SONG)) { 
+				renderQueue(q213, new int[] {++fixQueueNumber,0,0});
+			} else { 
+				renderQueue(q312, new int[] {++fixQueueNumber,0,0});
+			}
 			fixQueue = false;
+			try {
+				digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(fixQueueNumber), slot);
+			} catch (MalformedURLException ex) { 
+				ex.printStackTrace();
+			}
 			fixQueueNumber = 0;
-		} 
+		} else { 
+		}
+		somethingInProgress = false;
+	}
+
+	private void repeatQueue(Slot slot) { 
+		somethingInProgress = true;
+		try {
+			digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(DBUtil.repateQueue(slot.value())), slot);
+		} catch (MalformedURLException ex) { 
+			ex.printStackTrace();
+		}
+		somethingInProgress = false;
 	}
 
 	public static void main(String[] args) throws IOException { 
@@ -128,45 +156,71 @@ public class QueueRunner implements NativeKeyListener {
 				try {
 					somethingInProgress = true;
 					DBUtil.resetQueue();
+					renderQueue(q123, q000);
 					somethingInProgress = false;
+					fixQueue = false;
 				} catch (SQLException e) { 
 					e.printStackTrace();
 					somethingInProgress = false;
+					fixQueue = false;
 				} 
 				break;
-			case NativeKeyEvent.VC_R: 
-				break;
 			case NativeKeyEvent.VC_A: 
+				if (fixQueueNumber + 100 > 999) { 
+					break;
+				}
 				if (!fixQueue) { 
 					fixQueue = true;
 					fixQueueNumber = 100;
-					renderQueue(new int[] {0,0,0}, new int[] {100,0,0});
+					renderQueue(q000, new int[] {100,0,0});
 				} else { 
 					fixQueueNumber += 100;
-					renderQueue(new int[] {0,0,0}, new int[] {fixQueueNumber,0,0});
+					renderQueue(q000, new int[] {fixQueueNumber,0,0});
 				}
 				break;
 			case NativeKeyEvent.VC_B: 
+				if (fixQueueNumber + 10 > 999) { 
+					break;
+				}
+				if (!fixQueue) { 
+					fixQueue = true;
+					fixQueueNumber = 10;
+					renderQueue(q000, new int[] {10,0,0});
+				} else { 
+					fixQueueNumber += 10;
+					renderQueue(q000, new int[] {fixQueueNumber,0,0});
+				}
 				break;
 			case NativeKeyEvent.VC_C: 
-				break;
-			case NativeKeyEvent.VC_F: 
-	
-				break;
-			case NativeKeyEvent.VC_1: 
-				if (fixQueue) { 
-					fixQueue = false;
-					renderQueue(new int[] {3,2,1}, new int[] {++fixQueueNumber,0,0});
-				} 
-				try {
-					digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(fixQueueNumber), Slot.NEUNG);
-				} catch (MalformedURLException ex) { 
-					ex.printStackTrace();
+				if (fixQueueNumber + 1 > 999) { 
+					break;
 				}
-				fixQueueNumber = 0;
-			case NativeKeyEvent.VC_4: 
+				if (!fixQueue) { 
+					fixQueue = true;
+					fixQueueNumber = 1;
+					renderQueue(q000, new int[] {1,0,0});
+				} else { 
+					fixQueueNumber += 1;
+					renderQueue(q000, new int[] {fixQueueNumber,0,0});
+				}
 				break;
 			case NativeKeyEvent.VC_7: 
+				increaseQueue(Slot.NEUNG);
+				break;
+			case NativeKeyEvent.VC_4: 
+				increaseQueue(Slot.SONG);
+				break;
+			case NativeKeyEvent.VC_1: 
+				increaseQueue(Slot.SARM);
+				break;
+			case NativeKeyEvent.VC_8: 
+				repeatQueue(Slot.NEUNG);
+				break;
+			case NativeKeyEvent.VC_5: 
+				repeatQueue(Slot.SONG);
+				break;
+			case NativeKeyEvent.VC_2: 
+				repeatQueue(Slot.SARM);
 				break;
 			default : break;
 		}

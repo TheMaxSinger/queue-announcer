@@ -45,7 +45,7 @@ public class DBUtil {
 	public static int[] firstLoadQueue() throws SQLException { 
 		int[] queues = new int[3];
 		Connection connection = getConnection();
-		String selectMaxQueue = "SELECT queue FROM queue ORDER BY slot";
+		String selectMaxQueue = "SELECT slot, queue FROM queue ORDER BY queue DESC";
 		PreparedStatement statement = connection.prepareStatement(selectMaxQueue);
 		ResultSet result = statement.executeQuery();
 		int index = 0;
@@ -53,7 +53,23 @@ public class DBUtil {
 		    queues[index++] = result.getInt("queue");
 		}
 		closeResultSet(result);
+		closeConnection(connection);
 		return queues;
+	}
+
+	public static int repeatQueue(int slot) throws SQLException { 
+		Connection connection = getConnection();
+		String selectMaxQueue = "SELECT queue FROM queue WHERE slot = ?";
+		PreparedStatement statement = connection.prepareStatement(selectMaxQueue);
+		statement.setInt(1, slot);
+		ResultSet result = statement.executeQuery();
+		int queue = 0;
+		while(result.next()) {
+		    queue = result.getInt("queue");
+		}
+		closeResultSet(result);
+		closeConnection(connection);
+		return queue;
 	}
 	
 	public static void resetQueue() throws SQLException { 
