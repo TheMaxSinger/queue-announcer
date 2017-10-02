@@ -17,8 +17,8 @@ public class StringUtil {
 	
 	public static String getInputString(int[] slots, int[] queues) { 
 		StringBuilder str = new StringBuilder("\":1");
-		for (int slot : slots) { 
-			str.append(slot);
+		for (int i = slots.length - 1; i >= 0; i--) { 
+			str.append(slots[i]);
 		}
 		for (int queue : queues) { 
 			str.append(headZeroFill(queue));

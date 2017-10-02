@@ -94,10 +94,14 @@ public class QueueRunner implements NativeKeyListener {
 		return executeCommand(new String[] {"screen", "-S", "queue", "-X", "stuff", StringUtil.getInputString(slots, queues)});
 	}
 
+	private String renderQueue(String input) { 
+		return executeCommand(new String[] {"screen", "-S", "queue", "-X", "stuff", input});
+	}
+
 	private void increaseQueue(Slot slot) { 
 		somethingInProgress = true;
 		if (fixQueue) { 
-			if (fixQueueNumber = 999) { 
+			if (fixQueueNumber == 999) { 
 				fixQueueNumber = 0;
 			}
 			if (slot.equals(Slot.NEUNG)) { 
@@ -109,12 +113,21 @@ public class QueueRunner implements NativeKeyListener {
 			}
 			fixQueue = false;
 			try {
+				DBUtil.updateQueue(slot.value(), fixQueueNumber, true);
+				renderQueue(DBUtil.loadQueue());
 				digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(fixQueueNumber), slot);
-			} catch (MalformedURLException ex) { 
+			} catch (Exception ex) { 
 				ex.printStackTrace();
-			}
+			} 
 			fixQueueNumber = 0;
 		} else { 
+			try {
+				int newQueue = DBUtil.updateQueue(slot.value(), fixQueueNumber, false);
+				renderQueue(DBUtil.loadQueue());
+				digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(newQueue), slot);
+			} catch (Exception ex) { 
+				ex.printStackTrace();
+			}
 		}
 		somethingInProgress = false;
 	}
@@ -122,16 +135,17 @@ public class QueueRunner implements NativeKeyListener {
 	private void repeatQueue(Slot slot) { 
 		somethingInProgress = true;
 		try {
-			digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(DBUtil.repateQueue(slot.value())), slot);
-		} catch (MalformedURLException ex) { 
+			digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(DBUtil.repeatQueue(slot.value())), slot);
+		} catch (Exception ex) { 
 			ex.printStackTrace();
 		}
 		somethingInProgress = false;
 	}
 
-	public static void main(String[] args) throws IOException { 
+	public static void main(String[] args) throws Exception { 
 		QueueRunner test = new QueueRunner();
 		test.executeCommand(new String[] {"screen", "-d", "-m", "-S", "queue", "/dev/ttyUSB0", "9600"});
+		test.renderQueue(DBUtil.loadQueue());
 	}
 
 	@Override
@@ -159,10 +173,12 @@ public class QueueRunner implements NativeKeyListener {
 					renderQueue(q123, q000);
 					somethingInProgress = false;
 					fixQueue = false;
+					fixQueueNumber = 0;
 				} catch (SQLException e) { 
 					e.printStackTrace();
 					somethingInProgress = false;
 					fixQueue = false;
+					fixQueueNumber = 0;
 				} 
 				break;
 			case NativeKeyEvent.VC_A: 

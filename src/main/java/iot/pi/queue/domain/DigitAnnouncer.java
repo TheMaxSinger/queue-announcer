@@ -23,6 +23,9 @@ public class DigitAnnouncer implements Announcer {
 	
 	@Override
 	public void announce(List<Announceable> announceables, Slot slot) throws MalformedURLException { 
+		if (announceables.isEmpty()) { 
+			return;
+		}
 		SoundUtil.play(QueueVoices.NUMBER.getAudioFile());
 		announce(announceables);
 		SoundUtil.play(QueueVoices.DEQUEUE.getAudioFile());
