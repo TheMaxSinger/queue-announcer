@@ -1,7 +1,6 @@
 package iot.pi.queue.run;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.net.MalformedURLException;
 
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
@@ -17,16 +15,14 @@ import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 
 import iot.pi.queue.constants.Slot;
-import iot.pi.queue.util.DBUtil;
-import iot.pi.queue.util.StringUtil;
+import iot.pi.queue.domain.Announcer;
 import iot.pi.queue.domain.DigitAnnouncer;
 import iot.pi.queue.util.AnnounceUtil;
-import iot.pi.queue.domain.Announcer;
+import iot.pi.queue.util.DBUtil;
+import iot.pi.queue.util.StringUtil;
 
 public class QueueRunner implements NativeKeyListener { 
-	
-	private static boolean locked = false;
-	private static boolean jump = false;
+
 	private static boolean fixQueue = false;
 	private static boolean somethingInProgress = false;
 	private static int fixQueueNumber = 0;
@@ -34,9 +30,6 @@ public class QueueRunner implements NativeKeyListener {
 	private static final int[] q123 = new int[] {3, 2, 1};
 	private static final int[] q213 = new int[] {3, 1, 2};
 	private static final int[] q312 = new int[] {2, 1, 3};
-	private static final int[] q132 = new int[] {2, 3, 1};
-	private static final int[] q231 = new int[] {1, 3, 2};
-	private static final int[] q321 = new int[] {3, 2, 1};
 	private static final Announcer digitAnnouncer = new DigitAnnouncer();
 	static final int MINUS_KEY = 3658;
 	static final int PLUS_KEY = 3662;
@@ -66,12 +59,6 @@ public class QueueRunner implements NativeKeyListener {
 		Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
 		logger.setLevel(Level.OFF);
 	}
-	
-	public void lock() {
-        synchronized (QueueRunner.class) {
-            locked = true;
-        }
-    }
 	
 	private String executeCommand(String[] command) {
 		StringBuffer output = new StringBuffer();
@@ -106,16 +93,16 @@ public class QueueRunner implements NativeKeyListener {
 			}
 			++fixQueueNumber;
 			if (slot.equals(Slot.NEUNG)) { 
-				//renderQueue(q123, new int[] {fixQueueNumber,0,0});
+				renderQueue(q123, new int[] {fixQueueNumber,0,0});
 			} else if (slot.equals(Slot.SONG)) { 
-				//renderQueue(q213, new int[] {fixQueueNumber,0,0});
+				renderQueue(q213, new int[] {fixQueueNumber,0,0});
 			} else { 
-				//renderQueue(q312, new int[] {fixQueueNumber,0,0});
+				renderQueue(q312, new int[] {fixQueueNumber,0,0});
 			}
 			fixQueue = false;
 			try {
 				DBUtil.updateQueue(slot.value(), fixQueueNumber);
-				//renderQueue(DBUtil.loadQueue());
+				renderQueue(DBUtil.loadQueue());
 				digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(fixQueueNumber), slot);
 			} catch (Exception ex) { 
 				ex.printStackTrace();
@@ -125,7 +112,7 @@ public class QueueRunner implements NativeKeyListener {
 			try {
 				int newQueue = DBUtil.updateNextQueue(slot.value());
 				renderQueue(DBUtil.loadQueue());
-				//digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(newQueue), slot);
+				digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(newQueue), slot);
 			} catch (Exception ex) { 
 				ex.printStackTrace();
 			}
@@ -145,9 +132,9 @@ public class QueueRunner implements NativeKeyListener {
 
 	public static void main(String[] args) throws Exception { 
 		somethingInProgress = true;
-		QueueRunner test = new QueueRunner();
-		//test.executeCommand(new String[] {"screen", "-d", "-m", "-S", "queue", "/dev/ttyUSB0", "9600"});
-		//test.renderQueue(DBUtil.loadQueue());
+		QueueRunner runner = new QueueRunner();
+		runner.executeCommand(new String[] {"screen", "-d", "-m", "-S", "queue", "/dev/ttyUSB0", "9600"});
+		runner.renderQueue(DBUtil.loadQueue());
 		somethingInProgress = false;
 	}
 
@@ -192,10 +179,10 @@ public class QueueRunner implements NativeKeyListener {
 				if (!fixQueue) { 
 					fixQueue = true;
 					fixQueueNumber = 100;
-					//renderQueue(q000, new int[] {100,0,0});
+					renderQueue(q000, new int[] {100,0,0});
 				} else { 
 					fixQueueNumber += 100;
-					//renderQueue(q000, new int[] {fixQueueNumber,0,0});
+					renderQueue(q000, new int[] {fixQueueNumber,0,0});
 				}
 				somethingInProgress = false;
 				break;
@@ -207,10 +194,10 @@ public class QueueRunner implements NativeKeyListener {
 				if (!fixQueue) { 
 					fixQueue = true;
 					fixQueueNumber = 10;
-					//renderQueue(q000, new int[] {10,0,0});
+					renderQueue(q000, new int[] {10,0,0});
 				} else { 
 					fixQueueNumber += 10;
-					//renderQueue(q000, new int[] {fixQueueNumber,0,0});
+					renderQueue(q000, new int[] {fixQueueNumber,0,0});
 				} 
 				somethingInProgress = false;
 				break;
@@ -222,10 +209,10 @@ public class QueueRunner implements NativeKeyListener {
 				if (!fixQueue) { 
 					fixQueue = true;
 					fixQueueNumber = 1;
-					//renderQueue(q000, new int[] {1,0,0});
+					renderQueue(q000, new int[] {1,0,0});
 				} else { 
 					fixQueueNumber += 1;
-					//renderQueue(q000, new int[] {fixQueueNumber,0,0});
+					renderQueue(q000, new int[] {fixQueueNumber,0,0});
 				}
 				somethingInProgress = false;
 				break;
