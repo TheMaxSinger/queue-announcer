@@ -1,10 +1,13 @@
 package iot.pi.queue.util;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.List;
 
 public class DBUtil { 
 	
@@ -15,6 +18,10 @@ public class DBUtil {
 			e.printStackTrace();
 		}
 	}
+	
+	private static final List<Integer> slot23 = Arrays.asList(2, 3);
+	private static final List<Integer> slot13 = Arrays.asList(1, 3);
+	private static final List<Integer> slot12 = Arrays.asList(1, 2);
 
 	private static Connection getConnection() {
 		Connection connection = null;
@@ -26,6 +33,14 @@ public class DBUtil {
 		return connection;
 	}
 
+	private static void closeStatement(Statement statement) { 
+		try {
+			statement.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private static void closeConnection(Connection connection) { 
 		try {
 			connection.close();
@@ -56,6 +71,7 @@ public class DBUtil {
 			index++;
 		}
 		closeResultSet(result);
+		closeStatement(statement);
 		closeConnection(connection);
 		return StringUtil.getInputString(slots, queues);
 	}
@@ -71,6 +87,7 @@ public class DBUtil {
 		    queue = result.getInt("queue");
 		}
 		closeResultSet(result);
+		closeStatement(statement);
 		closeConnection(connection);
 		return queue;
 	}
@@ -78,100 +95,109 @@ public class DBUtil {
 	public static void resetQueue() throws SQLException { 
 		Connection connection = getConnection();
 		String updateTableSQL = "UPDATE queue SET queue = 0, last_called = 'N'";
-		PreparedStatement preparedStatement = connection.prepareStatement(updateTableSQL);
-		preparedStatement.executeUpdate();
+		PreparedStatement statement = connection.prepareStatement(updateTableSQL);
+		statement.executeUpdate();
 		updateTableSQL = "UPDATE queue SET slot_sequence = 1 WHERE slot_number = 1";
-		preparedStatement = connection.prepareStatement(updateTableSQL);
-		preparedStatement.executeUpdate();
+		statement = connection.prepareStatement(updateTableSQL);
+		statement.executeUpdate();
 		updateTableSQL = "UPDATE queue SET slot_sequence = 2 WHERE slot_number = 2";
-		preparedStatement = connection.prepareStatement(updateTableSQL);
-		preparedStatement.executeUpdate();
+		statement = connection.prepareStatement(updateTableSQL);
+		statement.executeUpdate();
 		updateTableSQL = "UPDATE queue SET slot_sequence = 3 WHERE slot_number = 3";
-		preparedStatement = connection.prepareStatement(updateTableSQL);
-		preparedStatement.executeUpdate();
+		statement = connection.prepareStatement(updateTableSQL);
+		statement.executeUpdate();
+		closeStatement(statement);
 		closeConnection(connection);
 	}
 	
-	public static int updateQueue(int slot, int queue, boolean afterFix) throws SQLException { 
-		int zeros = 0;		
+	public static int updateNextQueue(int slot) throws SQLException { 
 		int max = 0;
 		int newQueue = 0;
 		int lastCalledSlot = 0;
+		String updateTableSQL;
 		Connection connection = getConnection();
-		String selectZeros = "SELECT COUNT(queue) AS zeros FROM queue WHERE queue = 0";
-		PreparedStatement statement = connection.prepareStatement(selectZeros);
+		String selectMaxQueue = "SELECT MAX(queue) AS max_queue FROM queue";
+		PreparedStatement statement = connection.prepareStatement(selectMaxQueue);
 		ResultSet result = statement.executeQuery();
 		while(result.next()) {
-		    	zeros = result.getInt("zeros");
+	    	max = result.getInt("max_queue");
+		}
+		if (max > 999) { 
+			max = 0;
 		}
 		closeResultSet(result);
-		String updateTableSQL = "";
-		if (zeros != 0) { 
-			updateTableSQL = "UPDATE queue SET slot_sequence = ? WHERE slot_number = ?";
-			statement = connection.prepareStatement(updateTableSQL);
-			statement.setInt(1, zeros);
-			statement.setInt(2, slot);
-			statement.executeUpdate();
-		}
-		String selectLastCalled = "SELECT slot_number AS slot FROM queue WHERE last_called = 'Y'";
+		closeStatement(statement);
+		String selectLastCalled = "SELECT slot_number FROM queue WHERE last_called = 'Y'";
 		statement = connection.prepareStatement(selectLastCalled);
 		result = statement.executeQuery();
 		while(result.next()) {
-		    	lastCalledSlot = result.getInt("slot");
-		}
-		if (lastCalledSlot == 0) { 
-			lastCalledSlot = 3;
+	    	lastCalledSlot = result.getInt("slot_number");
 		}
 		closeResultSet(result);
-		if (afterFix) { 
-			updateTableSQL = "UPDATE queue SET queue = ?, last_called = 'Y' WHERE slot_number = ?";
+		closeStatement(statement);
+		if (lastCalledSlot != 0) { 
+			updateTableSQL = "UPDATE queue SET slot_sequence = 2, last_called = 'N' WHERE slot_number = ?";
 			statement = connection.prepareStatement(updateTableSQL);
-			statement.setInt(1, queue);
+			statement.setInt(1, lastCalledSlot);
+			statement.executeUpdate();
+			closeStatement(statement);
+			updateTableSQL = "UPDATE queue SET slot_sequence = 1, last_called = 'N' WHERE slot_number <> ? AND slot_number <> ?";
+			statement = connection.prepareStatement(updateTableSQL);
+			statement.setInt(1, lastCalledSlot);
 			statement.setInt(2, slot);
 			statement.executeUpdate();
-			updateTableSQL = "UPDATE queue SET last_called = 'N' WHERE slot_number <> ?";
-			statement = connection.prepareStatement(updateTableSQL);
-			statement.setInt(1, slot);
-			statement.executeUpdate();
-			// update sequece 3 to this slot
-			// update sequece 2 to last called slot
-			// update sequence 1 to another slot
-
-			closeConnection(connection);
-			newQueue = queue;
+			closeStatement(statement);
 		} else { 
-			String selectMaxQueue = "SELECT MAX(queue) AS max_queue FROM queue";
-			statement = connection.prepareStatement(selectMaxQueue);
-			result = statement.executeQuery();
-			while(result.next()) {
-		    		max = result.getInt("max_queue");
-			}
-			if (max > 999) { 
-				max = 0;
-			}
-			closeResultSet(result);
-			updateTableSQL = "UPDATE queue SET queue = ?, last_called = 'Y' WHERE slot_number = ?";
-			statement = connection.prepareStatement(updateTableSQL);
-			newQueue = ++max;
-			statement.setInt(1, newQueue);
-			statement.setInt(2, slot);
-			statement.executeUpdate();
-			updateTableSQL = "UPDATE queue SET last_called = 'N' WHERE slot_number <> ?";
-			statement = connection.prepareStatement(updateTableSQL);
-			statement.setInt(1, slot);
-			statement.executeUpdate();
-			closeConnection(connection);
+			updateAnotherSlots(connection, statement, slot);
 		}
+		updateTableSQL = "UPDATE queue SET queue = ?, slot_sequence = 3, last_called = 'Y' WHERE slot_number = ?";
+		statement = connection.prepareStatement(updateTableSQL);
+		newQueue = ++max;
+		statement.setInt(1, newQueue);
+		statement.setInt(2, slot);
+		statement.executeUpdate();
+		closeStatement(statement);
+		closeConnection(connection);
 		return newQueue;
 	}
 	
-	public static void terminateQueue(int slot) throws SQLException { 
+	private static List<Integer> getAnotherSlots(int slot) { 
+		if (slot == 1) { 
+			return slot23;
+		} else if (slot == 2) { 
+			return slot13;
+		} else { 
+			return slot12;
+		}
+	}
+	
+	private static void updateAnotherSlots(Connection connection, PreparedStatement statement, int slot) throws SQLException { 
+		String updateTableSQL;
+		int shiftingSlot = 1;
+		for (int anotherSlot : getAnotherSlots(slot)) { 
+			updateTableSQL = "UPDATE queue SET slot_sequence = ?, last_called = 'N' WHERE slot_number = ?";
+			statement = connection.prepareStatement(updateTableSQL);
+			statement.setInt(1, shiftingSlot++);
+			statement.setInt(2, anotherSlot);
+			statement.executeUpdate();
+			closeStatement(statement);
+		}
+	}
+	
+	public static void updateQueue(int slot, int queue) throws SQLException { 
 		Connection connection = getConnection();
-		String updateTableSQL = "UPDATE queue SET finished = 'Y' WHERE slot_number = ?";
-		PreparedStatement preparedStatement = connection.prepareStatement(updateTableSQL);
-		preparedStatement.setInt(1, slot);
-		preparedStatement.executeUpdate();
+		String updateTableSQL = "UPDATE queue SET slot_sequence = 3, queue = ?, last_called = 'Y' WHERE slot_number = ?";
+		PreparedStatement statement = connection.prepareStatement(updateTableSQL);
+		statement.setInt(1, queue);
+		statement.setInt(2, slot);
+		statement.executeUpdate();
+		closeStatement(statement);
+		updateAnotherSlots(connection, statement, slot);
 		closeConnection(connection);
+	}
+	
+	public static void main(String[] args) throws SQLException { 
+		System.out.println(DBUtil.loadQueue());
 	}
 	
 }

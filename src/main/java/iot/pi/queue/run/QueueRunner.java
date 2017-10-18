@@ -104,17 +104,18 @@ public class QueueRunner implements NativeKeyListener {
 			if (fixQueueNumber == 999) { 
 				fixQueueNumber = 0;
 			}
+			++fixQueueNumber;
 			if (slot.equals(Slot.NEUNG)) { 
-				renderQueue(q123, new int[] {++fixQueueNumber,0,0});
+				//renderQueue(q123, new int[] {fixQueueNumber,0,0});
 			} else if (slot.equals(Slot.SONG)) { 
-				renderQueue(q213, new int[] {++fixQueueNumber,0,0});
+				//renderQueue(q213, new int[] {fixQueueNumber,0,0});
 			} else { 
-				renderQueue(q312, new int[] {++fixQueueNumber,0,0});
+				//renderQueue(q312, new int[] {fixQueueNumber,0,0});
 			}
 			fixQueue = false;
 			try {
-				DBUtil.updateQueue(slot.value(), fixQueueNumber, true);
-				renderQueue(DBUtil.loadQueue());
+				DBUtil.updateQueue(slot.value(), fixQueueNumber);
+				//renderQueue(DBUtil.loadQueue());
 				digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(fixQueueNumber), slot);
 			} catch (Exception ex) { 
 				ex.printStackTrace();
@@ -122,9 +123,9 @@ public class QueueRunner implements NativeKeyListener {
 			fixQueueNumber = 0;
 		} else { 
 			try {
-				int newQueue = DBUtil.updateQueue(slot.value(), fixQueueNumber, false);
+				int newQueue = DBUtil.updateNextQueue(slot.value());
 				renderQueue(DBUtil.loadQueue());
-				digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(newQueue), slot);
+				//digitAnnouncer.announce(AnnounceUtil.getNumberAnnounce(newQueue), slot);
 			} catch (Exception ex) { 
 				ex.printStackTrace();
 			}
@@ -143,9 +144,11 @@ public class QueueRunner implements NativeKeyListener {
 	}
 
 	public static void main(String[] args) throws Exception { 
+		somethingInProgress = true;
 		QueueRunner test = new QueueRunner();
-		test.executeCommand(new String[] {"screen", "-d", "-m", "-S", "queue", "/dev/ttyUSB0", "9600"});
-		test.renderQueue(DBUtil.loadQueue());
+		//test.executeCommand(new String[] {"screen", "-d", "-m", "-S", "queue", "/dev/ttyUSB0", "9600"});
+		//test.renderQueue(DBUtil.loadQueue());
+		somethingInProgress = false;
 	}
 
 	@Override
@@ -170,7 +173,7 @@ public class QueueRunner implements NativeKeyListener {
 				try {
 					somethingInProgress = true;
 					DBUtil.resetQueue();
-					renderQueue(q123, q000);
+					//renderQueue(q123, q000);
 					somethingInProgress = false;
 					fixQueue = false;
 					fixQueueNumber = 0;
@@ -182,43 +185,49 @@ public class QueueRunner implements NativeKeyListener {
 				} 
 				break;
 			case NativeKeyEvent.VC_A: 
+				somethingInProgress = true;
 				if (fixQueueNumber + 100 > 999) { 
 					break;
 				}
 				if (!fixQueue) { 
 					fixQueue = true;
 					fixQueueNumber = 100;
-					renderQueue(q000, new int[] {100,0,0});
+					//renderQueue(q000, new int[] {100,0,0});
 				} else { 
 					fixQueueNumber += 100;
-					renderQueue(q000, new int[] {fixQueueNumber,0,0});
+					//renderQueue(q000, new int[] {fixQueueNumber,0,0});
 				}
+				somethingInProgress = false;
 				break;
 			case NativeKeyEvent.VC_B: 
+				somethingInProgress = true;
 				if (fixQueueNumber + 10 > 999) { 
 					break;
 				}
 				if (!fixQueue) { 
 					fixQueue = true;
 					fixQueueNumber = 10;
-					renderQueue(q000, new int[] {10,0,0});
+					//renderQueue(q000, new int[] {10,0,0});
 				} else { 
 					fixQueueNumber += 10;
-					renderQueue(q000, new int[] {fixQueueNumber,0,0});
-				}
+					//renderQueue(q000, new int[] {fixQueueNumber,0,0});
+				} 
+				somethingInProgress = false;
 				break;
 			case NativeKeyEvent.VC_C: 
+				somethingInProgress = true;
 				if (fixQueueNumber + 1 > 999) { 
 					break;
 				}
 				if (!fixQueue) { 
 					fixQueue = true;
 					fixQueueNumber = 1;
-					renderQueue(q000, new int[] {1,0,0});
+					//renderQueue(q000, new int[] {1,0,0});
 				} else { 
 					fixQueueNumber += 1;
-					renderQueue(q000, new int[] {fixQueueNumber,0,0});
+					//renderQueue(q000, new int[] {fixQueueNumber,0,0});
 				}
+				somethingInProgress = false;
 				break;
 			case NativeKeyEvent.VC_7: 
 				increaseQueue(Slot.NEUNG);

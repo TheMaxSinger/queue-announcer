@@ -1,12 +1,10 @@
 package iot.pi.queue.util;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import iot.pi.queue.constants.QueueVoices;
 import iot.pi.queue.domain.Announceable;
-import iot.pi.queue.domain.Announcer;
 
 public class AnnounceUtil { 
 	
@@ -40,6 +38,16 @@ public class AnnounceUtil {
 			digits.add(QueueVoices.values()[nuai - 1]);
 		}
 		return digits;
+	}
+	
+	public static void main(String[] args) { 
+		for (int i = 1; i < 1000; i++) { 
+			for (Announceable a : getNumberAnnounce(i)) { 
+				System.out.print(a.toString());
+				System.out.print(" ");
+			}
+			System.out.println();
+		}
 	}
 
 }
