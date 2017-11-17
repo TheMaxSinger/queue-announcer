@@ -33,10 +33,7 @@ public class QueueRunner implements NativeKeyListener {
 	private static final Announcer digitAnnouncer = new DigitAnnouncer();
 	static final int MINUS_KEY = 3658;
 	static final int PLUS_KEY = 3662;
-	static final List<Integer> allowKeys = Arrays.asList(NativeKeyEvent.VC_A, 
-														 NativeKeyEvent.VC_B,
-														 NativeKeyEvent.VC_C,
-														 NativeKeyEvent.VC_1, 
+	static final List<Integer> allowKeys = Arrays.asList(NativeKeyEvent.VC_1, 
 														 NativeKeyEvent.VC_2,
 														 NativeKeyEvent.VC_3, 
 														 NativeKeyEvent.VC_4, 
@@ -150,9 +147,9 @@ public class QueueRunner implements NativeKeyListener {
 				keyCode != NativeKeyEvent.VC_1 && 
 				keyCode != NativeKeyEvent.VC_4 && 
 				keyCode != NativeKeyEvent.VC_7 && 
-				keyCode != NativeKeyEvent.VC_A && 
-				keyCode != NativeKeyEvent.VC_B && 
-				keyCode != NativeKeyEvent.VC_C)) { 
+				keyCode != NativeKeyEvent.VC_3 && 
+				keyCode != NativeKeyEvent.VC_6 && 
+				keyCode != NativeKeyEvent.VC_9)) { 
 			return;
 		}
 		switch (event.getKeyCode()) { 
@@ -171,7 +168,7 @@ public class QueueRunner implements NativeKeyListener {
 					fixQueueNumber = 0;
 				} 
 				break;
-			case NativeKeyEvent.VC_A: 
+			case NativeKeyEvent.VC_9: 
 				somethingInProgress = true;
 				if (fixQueueNumber + 100 > 999) { 
 					break;
@@ -186,7 +183,7 @@ public class QueueRunner implements NativeKeyListener {
 				}
 				somethingInProgress = false;
 				break;
-			case NativeKeyEvent.VC_B: 
+			case NativeKeyEvent.VC_6: 
 				somethingInProgress = true;
 				if (fixQueueNumber + 10 > 999) { 
 					break;
@@ -201,7 +198,7 @@ public class QueueRunner implements NativeKeyListener {
 				} 
 				somethingInProgress = false;
 				break;
-			case NativeKeyEvent.VC_C: 
+			case NativeKeyEvent.VC_3: 
 				somethingInProgress = true;
 				if (fixQueueNumber + 1 > 999) { 
 					break;
