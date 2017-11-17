@@ -160,7 +160,7 @@ public class QueueRunner implements NativeKeyListener {
 				try {
 					somethingInProgress = true;
 					DBUtil.resetQueue();
-					//renderQueue(q123, q000);
+					renderQueue(q123, q000);
 					somethingInProgress = false;
 					fixQueue = false;
 					fixQueueNumber = 0;
